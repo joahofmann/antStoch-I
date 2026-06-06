@@ -27,7 +27,9 @@ To ensure the process begins exactly at $x_0$ and ends exactly at $x_1$:
 #### Common Configurations:
 1.  **Deterministic Flows (Flow Matching / Rectified Flow):**
     We set the noise bridge $\gamma(t) = 0$, with linear schedules $\alpha(t) = 1 - t$ and $\beta(t) = t$. The path is a straight-line interpolation:
+
     $$x_t = (1 - t)x_0 + t x_1$$
+
 2.  **Stochastic Bridges (Diffusion):**
     We set $\gamma(t) > 0$ for $t \in (0, 1)$ to add random noise along the trajectory. A typical choice is $\gamma(t) = \sqrt{t(1 - t)}$.
 

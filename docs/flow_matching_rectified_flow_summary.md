@@ -8,7 +8,9 @@ This document provides a mathematically intuitive summary of Scott H. Hawley's I
 
 In physics, fluid motion can be described in two ways:
 *   **Lagrangian View (Particle Tracking):** Traces individual trajectories of fluid particles. The position $\vec{r}(t)$ of a particle is governed by the ordinary differential equation (ODE):
+
     $$\frac{d\vec{r}}{dt} = \vec{v}(\vec{r}, t)$$
+
 *   **Eulerian View (Field Description):** Defines a continuous **velocity vector field** $\vec{v}(\vec{x}, t)$ that describes the fluid velocity at any fixed point in space $\vec{x}$ and time $t$.
 
 ### Non-Crossing Streamlines and Invertibility
@@ -27,16 +29,21 @@ The goal of generative flow models is to transport a simple distribution $\rho_0
 To train the model, we begin with a simple assumption: particles move in straight lines at constant speeds between randomly paired start and end points.
 1.  Sample a starting point $\mathbf{x}_0 \sim \rho_0$ and a target data point $\mathbf{x}_1 \sim \rho_1$.
 2.  **Randomly pair** them and define a straight trajectory (linear interpolation / LERP):
+
     $$\mathbf{x}_t = (1-t)\mathbf{x}_0 + t\mathbf{x}_1$$
+
 3.  The constant velocity of this particle is:
+
     $$\vec{v}_{\text{target}} = \mathbf{x}_1 - \mathbf{x}_0$$
 
 ### Step 2: Training the Network (Eulerian Velocity Field)
 Because of the random pairing, these straight trajectories cross each other extensively (creating a multi-valued velocity field). To resolve this, we train the network $\vec{v}_\theta(\vec{x}, t)$ using Mean Squared Error (MSE) to predict the velocity of these trajectories:
+
 $$\mathcal{L}(\theta) = \mathbb{E}_{t \sim U(0,1), \, \mathbf{x}_0 \sim \rho_0, \, \mathbf{x}_1 \sim \rho_1} \left[ \left\| \vec{v}_\theta(\mathbf{x}_t, t) - (\mathbf{x}_1 - \mathbf{x}_0) \right\|_2^2 \right]$$
 
 ### The Physics Analogy: "Seeking the Mean"
 When multiple crossing straight-line trajectories pass through the same point $\vec{x}$ at time $t$, the network cannot output multiple velocities. Minimizing the quadratic loss forces the network to output the **expected velocity** of all particles passing through that point at that time:
+
 $$\vec{v}_\theta(\vec{x}, t) = \mathbb{E} \left[ \mathbf{x}_1 - \mathbf{x}_0 \mid \mathbf{x}_t = \vec{x} \right]$$
 
 This is physically analogous to how chaotic molecular collisions (Brownian motion) average out to produce a smooth, continuous, and non-crossing macroscopic fluid flow. Thus, the integrated paths of the learned field $\vec{v}_\theta$ **never cross** and are smooth, even though the training trajectories crossed.
@@ -61,7 +68,9 @@ Although the learned trajectories from Flow Matching do not cross, they are **hi
 2.  Use the trained *teacher* model $\vec{v}_\theta$ to integrate $\mathbf{x}_0$ all the way to $t=1$, yielding a **simulated target point** $\mathbf{x}_1^{\text{sim}}$.
 3.  Form a new dataset of paired points $(\mathbf{x}_0, \mathbf{x}_1^{\text{sim}})$. Because $\mathbf{x}_1^{\text{sim}}$ is the actual endpoint of the streamline starting at $\mathbf{x}_0$, these points are **perfectly aligned** along the natural flow.
 4.  Train a new *student* model $\vec{v}_\phi$ using these new straight-line trajectories:
+
     $$\mathbf{x}_t^{\text{rect}} = (1-t)\mathbf{x}_0 + t\mathbf{x}_1^{\text{sim}}$$
+
     $$\mathcal{L}(\phi) = \mathbb{E} \left[ \left\| \vec{v}_\phi(\mathbf{x}_t^{\text{rect}}, t) - (\mathbf{x}_1^{\text{sim}} - \mathbf{x}_0) \right\|_2^2 \right]$$
 
 ### Result:
@@ -75,7 +84,9 @@ To get highly accurate simulated targets $\mathbf{x}_1^{\text{sim}}$ for Reflow,
 
 ### 1. Time Warping
 Trajectories are often straight at the boundaries ($t \approx 0, 1$) but highly curved in the middle ($t \approx 0.5$). We want to take smaller steps where the path is curved. We map uniform steps to non-uniform steps using an S-shaped polynomial warping function:
+
 $$f(t) =  4(1-s)t^3 + 6(s-1) t^2 + (3-2s)t, \quad t\in[0,1], \quad s\in[0,3/2]$$
+
 *   The parameter $s$ controls the slope at $t=0.5$. Setting $s=0.5$ concentrates more integration steps in the middle of the trajectory, significantly increasing accuracy. (This is equivalent to the sampling schedules used in Stable Diffusion 3 and FLUX).
 
 ### 2. High-Order ODE Solvers (RK4)
