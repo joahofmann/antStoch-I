@@ -32,11 +32,11 @@ To make computing the determinant of the Jacobian ($\det J$) tractable in high d
 
 ### Coupling Layers `[04:15]`
 Splits the input vector into two parts; the first part is copied directly, and the second part is scaled and shifted using functions of the first part:
-$$\begin{aligned}
-x_{1:d} &= z_{1:d} \\
-x_{d+1:D} &= z_{d+1:D} \odot \exp(s(z_{1:d})) + t(z_{1:d})
-\end{aligned}$$
-This creates a lower triangular Jacobian matrix where the determinant is simply the product of the diagonal elements: $\prod \exp(s(z_{1:d}))$ `[05:25]`.
+$$x_{1:d} = z_{1:d}$$
+$$x_{d+1:D} = z_{d+1:D} \odot \exp(s(z_{1:d})) + t(z_{1:d})$$
+This creates a lower triangular Jacobian matrix where the determinant is simply the product of the diagonal elements:
+$$\prod_{i=d+1}^{D} \exp(s(z_{1:d})_i)$$
+`[05:25]`.
 
 ### Autoregressive Flows `[06:04]`
 Each element of the output depends only on the preceding elements of the input:
