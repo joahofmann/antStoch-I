@@ -52,12 +52,15 @@ The training of traditional diffusion models (like DDPM) is approached from two 
 
 *   **The Score-Based View (Denoising Score Matching):**
     We train a network $s_\theta(x_t, t)$ to predict the score function $\nabla_{x_t} \log p_t(x_t)$ of the noised data distribution. Since the noising process is Gaussian, the score is proportional to the added noise:
-    $$\nabla_{x_t} \log q(x_t|x_0) = -\frac{\epsilon}{\sqrt{1 - \bar{\alpha}_t}}$$
+
+$$\nabla_{x_t} \log q(x_t|x_0) = -\frac{\epsilon}{\sqrt{1 - \bar{\alpha}_t}}$$
+
     Thus, learning the score is equivalent to predicting the noise vector $\epsilon$.
 *   **The ELBO View (Variational Inference):**
     Formulates diffusion as a Hierarchical Variational Autoencoder (HVAE) and maximizes the Evidence Lower Bound (ELBO). The loss decomposes into KL-divergence terms between the true reverse transitions and the parameterized model. Because both are Gaussian, the KL divergence simplifies to the Mean Squared Error (MSE) between the actual noise $\epsilon$ and the predicted noise.
 
-Both views yield the **simplified DDPM loss**:
+Both views yield the simplified DDPM loss:
+
 $$\mathcal{L}_{\text{simple}}(\theta) = \mathbb{E}_{t, x_0, \epsilon} \left[ \|\epsilon - \epsilon_\theta(x_t, t)\|^2 \right]$$
 
 ---
@@ -67,9 +70,12 @@ $$\mathcal{L}_{\text{simple}}(\theta) = \mathbb{E}_{t, x_0, \epsilon} \left[ \|\
 Instead of using complex simulation-based SDE losses, Stochastic Interpolants are trained using simple, highly stable quadratic regression losses:
 
 *   **Velocity Field Objective**: We train a velocity network $v_\theta(x_t, t)$ to match the average velocity of the paths:
-    $$\mathcal{L}_{\text{velocity}}(\theta) = \mathbb{E}_{t, x_0, x_1, z} \left[ \|v_\theta(x_t, t) - (\partial_t I(t, x_0, x_1) + \dot{\gamma}(t)z)\|^2 \right]$$
+
+$$\mathcal{L}_{\text{velocity}}(\theta) = \mathbb{E}_{t, x_0, x_1, z} \left[ \|v_\theta(x_t, t) - (\partial_t I(t, x_0, x_1) + \dot{\gamma}(t)z)\|^2 \right]$$
+
 *   **Score Field Objective (if $\gamma(t) > 0$)**: We train a score network $s_\phi(x_t, t)$ to match the noise:
-    $$\mathcal{L}_{\text{score}}(\phi) = \mathbb{E}_{t, x_0, x_1, z} \left[ \|\gamma(t)s_\phi(x_t, t) + z\|^2 \right]$$
+
+$$\mathcal{L}_{\text{score}}(\phi) = \mathbb{E}_{t, x_0, x_1, z} \left[ \|\gamma(t)s_\phi(x_t, t) + z\|^2 \right]$$
 
 ---
 
