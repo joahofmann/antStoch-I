@@ -62,7 +62,27 @@ $$\mathcal{L}_{\text{simple}}(\theta) = \mathbb{E}_{t, x_0, \epsilon} \left[ \|\
 
 ---
 
-## 4. Workspace Directory Structure Sketch
+## 4. Training Objectives for Stochastic Interpolants
+
+Instead of using complex simulation-based SDE losses, Stochastic Interpolants are trained using simple, highly stable quadratic regression losses:
+
+*   **Velocity Field Objective**: We train a velocity network $v_\theta(x_t, t)$ to match the average velocity of the paths:
+    $$\mathcal{L}_{\text{velocity}}(\theta) = \mathbb{E}_{t, x_0, x_1, z} \left[ \|v_\theta(x_t, t) - (\partial_t I(t, x_0, x_1) + \dot{\gamma}(t)z)\|^2 \right]$$
+*   **Score Field Objective (if $\gamma(t) > 0$)**: We train a score network $s_\phi(x_t, t)$ to match the noise:
+    $$\mathcal{L}_{\text{score}}(\phi) = \mathbb{E}_{t, x_0, x_1, z} \left[ \|\gamma(t)s_\phi(x_t, t) + z\|^2 \right]$$
+
+---
+
+## 5. Why they are a Unifying Framework
+
+By choosing different values for $\gamma(t)$, we recover:
+1.  **Normalizing Flows / Flow Matching** when $\gamma(t) = 0$.
+2.  **Diffusion Models / SDEs** when $\gamma(t) > 0$.
+3.  **Schrödinger Bridges** (the entropy-optimal path connecting two arbitrary densities) when optimizing the coupling between $x_0$ and $x_1$.
+
+---
+
+## 6. Workspace Directory Structure Sketch
 
 The active folder layout is organized as follows:
 
@@ -90,7 +110,7 @@ C:\Users\joach\
 
 ---
 
-## 5. Git & Workspace Initialization
+## 7. Git & Workspace Initialization
 
 The following steps were executed to set up the repository:
 1.  **Git Initialization**: Run `git init` inside `antStoch-I`.
