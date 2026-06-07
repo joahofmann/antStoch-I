@@ -13,8 +13,11 @@ We split the input vector $z \\in \\mathbb{R}^D$ and output vector $x \\in \\mat
 
 The coupling layer transforms these parts using two arbitrary neural networks, $s(z_A)$ (scale) and $t(z_A)$ (translation):
 1.  **Identity Mapping:** 
+
     $$x_A = z_A$$
+
 2.  **Affine Transformation:** 
+
     $$x_B = z_B \\odot \\exp(s(z_A)) + t(z_A)$$
 
 *(where $\\odot$ represents the Hadamard / element-wise product).*
@@ -33,24 +36,30 @@ Let us compute each of these four blocks:
 
 ### Block 1: $\\frac{\\partial x_A}{\\partial z_A}$
 Since $x_A = z_A$, each element $x_i$ (for $i \\le d$) depends only on $z_i$. Thus, the derivative is the Identity matrix:
+
 $$\\frac{\\partial x_A}{\\partial z_A} = \\mathbf{I}_{d \\times d}$$
 
 ### Block 2: $\\frac{\\partial x_A}{\\partial z_B}$
 Since $x_A = z_A$, the first part of the output does not depend on the second part of the input $z_B$ at all. Thus, all these derivatives are zero:
+
 $$\\frac{\\partial x_A}{\\partial z_B} = \\mathbf{0}_{d \\times (D-d)}$$
 
 ### Block 3: $\\frac{\\partial x_B}{\\partial z_A}$
 The second part of the output $x_B$ depends on $z_A$ through the neural networks $s(z_A)$ and $t(z_A)$. This creates a complicated matrix of derivatives:
+
 $$\\frac{\\partial x_B}{\\partial z_A} = \\mathbf{M}_{(D-d) \\times d}$$
 
 ### Block 4: $\\frac{\\partial x_B}{\\partial z_B}$
 Let us look at a single element $x_i$ in $x_B$ (where $i \\in \\{d+1, \\dots, D\\}$):
+
 $$x_i = z_i \\cdot \\exp(s(z_A)_{i-d}) + t(z_A)_{i-d}$$
+
 Now we take the partial derivative with respect to $z_j$ (where $j \\in \\{d+1, \\dots, D\\}$):
 *   If $i \\neq j$: $\\frac{\\partial x_i}{\\partial z_j} = 0$ (because $x_i$ only depends on its own $z_i$ element).
 *   If $i = j$: $\\frac{\\partial x_i}{\\partial z_i} = \\exp(s(z_A)_{i-d})$ (the coefficient of $z_i$).
 
 Because all off-diagonal terms are $0$, this block is a **diagonal matrix**:
+
 $$\\frac{\\partial x_B}{\\partial z_B} = \\text{diag}\\left( \\exp(s(z_A)) \\right)$$
 
 ---
@@ -67,10 +76,12 @@ $$J = \\begin{pmatrix}
 This is a **block lower triangular matrix** (since the top-right block is a zero matrix). 
 
 From linear algebra, the determinant of any block triangular matrix is simply the product of the determinants of its diagonal blocks:
+
 $$\\det(J) = \\det(\\mathbf{I}) \\cdot \\det\\left( \\text{diag}\\left(\\exp(s(z_A))\\right) \\right)$$
 
 1.  The determinant of the identity matrix is $1$: $\\det(\\mathbf{I}) = 1$.
 2.  The determinant of a diagonal matrix is simply the product of its diagonal elements:
+
     $$\\det\\left( \\text{diag}\\left(\\exp(s(z_A))\\right) \\right) = \\prod_{i=d+1}^{D} \\exp(s(z_A)_{i-d})$$
 
 Therefore:
